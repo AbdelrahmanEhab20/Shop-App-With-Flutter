@@ -6,6 +6,8 @@ import '../providers/cart_provider.dart';
 import '../screens/product_details_screen.dart';
 import '../screens/products_overview_screen.dart';
 import '../providers/products_provider.dart';
+import '../providers/orders_provider.dart';
+import '../screens/orders_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,10 +32,11 @@ class MyApp extends StatelessWidget {
             // will help to return a new instance of our provider class
             create: (ctx) => ProductsProvider()),
         // Provider---> CartClass Provider
+        ChangeNotifierProvider(create: (ctx) => CartProvider()),
+        // Provider---> CartClass Provider
         ChangeNotifierProvider(
-            // crate inside it's builder method with context help
-            // will help to return a new instance of our provider class
-            create: (ctx) => CartProvider()),
+          create: (ctx) => OrdersProvider(),
+        )
       ],
       child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -46,6 +49,7 @@ class MyApp extends StatelessWidget {
           routes: {
             ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
             CartScreen.routeName: (ctx) => CartScreen(),
+            OrdersScreen.routeName: (ctx) => OrdersScreen(),
           }),
     );
   }

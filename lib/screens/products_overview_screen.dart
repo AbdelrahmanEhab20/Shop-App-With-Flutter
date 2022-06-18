@@ -4,6 +4,7 @@ import '../providers/cart_provider.dart';
 import '../widgets/badge.dart';
 import '../widgets/product_grid_widget.dart';
 import '../screens/cart_screen.dart';
+import '../widgets/side_App_drawer.dart';
 
 // import '../providers/products_provider.dart';
 // import 'package:provider/provider.dart';
@@ -73,6 +74,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         ],
         centerTitle: true,
       ),
+      drawer: SideAppDrawer(),
       //Will Forward this var to products
       body: ProductWidget(_showOnlyFavorites),
     );

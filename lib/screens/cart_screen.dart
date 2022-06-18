@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myshop/providers/orders_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cart_item.dart';
@@ -16,7 +17,7 @@ class CartScreen extends StatelessWidget {
       body: Column(
         children: [
           Card(
-            margin: EdgeInsets.all(15),
+            margin: EdgeInsets.all(10),
             child: Padding(
               padding: EdgeInsets.all(8),
               child: Row(
@@ -30,20 +31,30 @@ class CartScreen extends StatelessWidget {
                   //used to display information
                   Chip(
                     backgroundColor: Theme.of(context).primaryColor,
+                    //Decimel two digit only
                     label: Text(
-                      '\$${cart.totalAmount}',
+                      '\$${cart.totalAmount.toStringAsFixed(2)}',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
                   TextButton(
                     child: Text(
                       'ORDER NOW',
+                      softWrap: true,
                       style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).primaryColor),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      // Fire The Add Function in the order provider.
+                      //not interseted in changes listen:false
+                      Provider.of<OrdersProvider>(context, listen: false)
+                          .addNewOrder(cart.cartItemsCopy.values.toList(),
+                              cart.totalAmount);
+                      //after add the order clear the list
+                      cart.clearListOfCart();
+                    },
                   )
                 ],
               ),

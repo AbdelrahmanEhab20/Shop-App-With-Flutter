@@ -76,5 +76,11 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
   //Remove one quantity of an Item By ICon delete in card
+  //-------------
 
+  //Clear The Cart After Making Order
+  void clearListOfCart() {
+    _cartItems = {};
+    notifyListeners();
+  }
 }

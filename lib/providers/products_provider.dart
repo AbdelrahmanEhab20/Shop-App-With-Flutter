@@ -40,6 +40,37 @@ class ProductsProvider with ChangeNotifier {
       imageUrl:
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     ),
+    Product(
+      id: 'p5',
+      title: 'Taasa',
+      description: 'Prepare any meal you want.',
+      price: 80.50,
+      imageUrl:
+          'https://images-na.ssl-images-amazon.com/images/I/31jLiaqeNdL.__AC_SY300_SX300_QL70_ML2_.jpg',
+    ),
+    Product(
+      id: 'p6',
+      title: 'Taarha Safraa',
+      description: 'Warm and cozy - exactly what you need for the winter.',
+      price: 30.50,
+      imageUrl: 'https://m.media-amazon.com/images/I/31Ffs5O9sQL._AC_.jpg',
+    ),
+    Product(
+      id: 'p7',
+      title: 'Red Te-Shirt ',
+      description: 'A red shirt - it is pretty red!',
+      price: 40.50,
+      imageUrl:
+          'https://m.media-amazon.com/images/I/71b+8uvjlcL._AC_SX679_.jpg',
+    ),
+    Product(
+      id: 'p8',
+      title: 'Pantaloon',
+      description: 'A nice pair of trousers.',
+      price: 59.99,
+      imageUrl:
+          'https://m.media-amazon.com/images/I/91gNRIwB-jL._AC_SY445_.jpg',
+    ),
   ];
 
   //This VAr and The check down Will Be for
