@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/product.dart';
+import 'product.dart';
 
 //A class that can be extended or mixed in that provides
 //a change notification API using [VoidCallback] for notifications.
@@ -42,12 +42,44 @@ class ProductsProvider with ChangeNotifier {
     ),
   ];
 
+  //This VAr and The check down Will Be for
+  // return a list with  only favorites
+  /**************************************************************** */
+  // var _showFavorites = false;
+  /**************************************************************** */
   //We will Pass This List With A getter return the original
   //  one to make it un Changeable at the original on it's references
   //because when the products changed function will be called to call the widgets interested in the products data
   List<Product> get loadedItems {
+    // if (_showFavorites) {
+    //   return _items.where((prodItem) => prodItem.isFavorite).toList();
+    // }
     return [..._items];
   }
+
+  /* Favorites List After Canceling it's methods  */
+  List<Product> get favoritesItems {
+    return _items.where((prodItem) => prodItem.isFavorite).toList();
+  }
+
+  //Find By ID Products
+  Product findByID(String id) {
+    return _items.firstWhere((prod) => prod.id == id);
+  }
+
+  //Show Favorites Method To show only Favs
+  // void showFavoritesOnly() {
+  //   _showFavorites = true;
+  //   //call notify listener to rebuilt according to changes
+  //   notifyListeners();
+  // }
+
+  //Show All Products Method To show All items
+  // void showAllProducts() {
+  //   _showFavorites = false;
+  //   //call notify listener to rebuilt according to changes
+  //   notifyListeners();
+  // }
 
   void addProduct() {
     // loadedItems.add(value);
