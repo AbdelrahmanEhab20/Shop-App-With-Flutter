@@ -22,7 +22,8 @@ class ProductItem extends StatelessWidget {
     // instead of consumer because it makes the toggle to lag
     final productItemData = Provider.of<Product>(context);
     //Cart Provider accessing it here
-    // we are not interested here to changes in the cart
+    // we are not interested here to changes in the cart so listen False .......
+
     final cartData = Provider.of<CartProvider>(context, listen: false);
     //print("Testing Consumer Ane Provider");
     return ClipRRect(
@@ -43,8 +44,29 @@ class ProductItem extends StatelessWidget {
                 color: Theme.of(context).accentColor,
                 icon: Icon(Icons.shopping_cart),
                 onPressed: () {
-                  cartData.addItem(productItemData.id, productItemData.price,
+                  cartData.addItem(productItemData.id!, productItemData.price,
                       productItemData.title);
+                  //we need to add a pop up message that we really add item
+                  //establish connection with scaffold to the nearest widget that control the page
+                  // we can use many methods with open drawer and also ....
+                  // take snackbar widget by material dart /shown at the bottom of screen with message
+                  //to stop wait and show rapidly the next message
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                      'Done , Added item To cart !!',
+                    ),
+                    //time will the message stop to see it
+                    duration: Duration(seconds: 2),
+                    //action happened with this message
+                    //like cancel our action on the top
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      onPressed: () {
+                        cartData.removeSingleItem(productItemData.id!);
+                      },
+                    ),
+                  ));
                 },
               ),
               //Consumer was here only to listen to this widget on the tree only

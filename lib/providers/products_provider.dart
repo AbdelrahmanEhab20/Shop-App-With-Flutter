@@ -98,23 +98,22 @@ class ProductsProvider with ChangeNotifier {
     return _items.firstWhere((prod) => prod.id == id);
   }
 
+  void addProduct() {
+    // loadedItems.add(value);
+    // To help the widgets and to that there something new happened and changed
+    notifyListeners();
+  }
   //Show Favorites Method To show only Favs
   // void showFavoritesOnly() {
   //   _showFavorites = true;
-  //   //call notify listener to rebuilt according to changes
+  //call notify listener to rebuilt according to changes
   //   notifyListeners();
   // }
 
   //Show All Products Method To show All items
   // void showAllProducts() {
   //   _showFavorites = false;
-  //   //call notify listener to rebuilt according to changes
+  //call notify listener to rebuilt according to changes
   //   notifyListeners();
   // }
-
-  void addProduct() {
-    // loadedItems.add(value);
-    // To help the widgets and to that there something new happened and changed
-    notifyListeners();
-  }
 }

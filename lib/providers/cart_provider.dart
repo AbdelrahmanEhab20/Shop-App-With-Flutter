@@ -70,6 +70,26 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  //remove single item
+  void removeSingleItem(String productId) {
+    if (!_cartItems.containsKey(productId)) {
+      return;
+    }
+    if (_cartItems[productId]!.quantity > 1) {
+      _cartItems.update(
+          productId,
+          (existingCartItem) => CartItem(
+                id: existingCartItem.id,
+                title: existingCartItem.title,
+                price: existingCartItem.price,
+                quantity: existingCartItem.quantity - 1,
+              ));
+    } else {
+      _cartItems.remove(productId);
+    }
+    notifyListeners();
+  }
+
   //Remove Item By The Dismissable
   void removeItem(String productID) {
     _cartItems.remove(productID);

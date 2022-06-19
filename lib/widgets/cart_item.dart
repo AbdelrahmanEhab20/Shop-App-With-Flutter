@@ -32,6 +32,35 @@ class CartItemCard extends StatelessWidget {
         Provider.of<CartProvider>(context, listen: false)
             .removeItem(productId!);
       },
+      confirmDismiss: (direction) {
+        //show Dialog to confirm want to delete or not
+        return showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('Are You Sure?'),
+            content: Text('You Want To Delete This Item ?'),
+            actions: [
+              TextButton(
+                child: Text('No'),
+                onPressed: (() {
+                  /// Here takes a future means when this end it will do action so
+                  ///  pass with pop (false) to stop deleting
+                  Navigator.of(ctx).pop(false);
+                }),
+              ),
+              TextButton(
+                child: Text('Yes'),
+                onPressed: (() {
+                  /// Here takes a future means when this end it will do action so
+                  /// pass with pop (true) to done deleting
+
+                  Navigator.of(ctx).pop(true);
+                }),
+              )
+            ],
+          ),
+        );
+      },
       child: Card(
         margin: EdgeInsets.symmetric(vertical: 4, horizontal: 15),
         child: Padding(
