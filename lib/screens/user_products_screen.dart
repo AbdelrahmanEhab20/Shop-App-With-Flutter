@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:myshop/widgets/side_App_drawer.dart';
+import '../widgets/side_App_drawer.dart';
 import 'package:provider/provider.dart';
 import '../providers/products_provider.dart';
 import '../widgets/user_product_item.dart';
+import '../screens/edit_product_screen.dart';
 
 //we will show list of products here and for each one we can update and delete
 //future features will be authentication to manage all of that
@@ -16,7 +17,7 @@ class UserProductsScreen extends StatelessWidget {
       appBar: AppBar(centerTitle: true, title: Text('Your Products'), actions: [
         IconButton(
           onPressed: () {
-            //-------------
+            Navigator.of(context).pushNamed(EditUserProductScreen.routeName);
           },
           icon: Icon(Icons.add),
         )
@@ -32,7 +33,8 @@ class UserProductsScreen extends StatelessWidget {
                 UserProductItem(
                     productsData.loadedItems[index].title,
                     productsData.loadedItems[index].imageUrl,
-                    productsData.loadedItems[index].description),
+                    productsData.loadedItems[index].description,
+                    productsData.loadedItems[index].id),
                 Divider(),
               ],
             );

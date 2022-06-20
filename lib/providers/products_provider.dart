@@ -98,11 +98,42 @@ class ProductsProvider with ChangeNotifier {
     return _items.firstWhere((prod) => prod.id == id);
   }
 
-  void addProduct() {
-    // loadedItems.add(value);
-    // To help the widgets and to that there something new happened and changed
+  //add new product
+  void addProduct(Product product) {
+    final newProduct = Product(
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      id: DateTime.now().toString(),
+    );
+    _items.add(newProduct);
+    // _items.insert(0, newProduct); // at the start of the list
     notifyListeners();
   }
+
+  /// update Product
+  void updateProduct(String id, Product newProduct) {
+    final prodIndex = _items.indexWhere((prod) => prod.id == id);
+    if (prodIndex >= 0) {
+      _items[prodIndex] = newProduct;
+      notifyListeners();
+    } else {
+      print('...');
+    }
+  }
+
+  /// delete Product
+
+  void deleteProduct(String id) {
+    _items.removeWhere((prod) => prod.id == id);
+    notifyListeners();
+  }
+  // void addProduct() {
+  //   // loadedItems.add(value);
+  //   // To help the widgets and to that there something new happened and changed
+  //   notifyListeners();
+  // }
   //Show Favorites Method To show only Favs
   // void showFavoritesOnly() {
   //   _showFavorites = true;

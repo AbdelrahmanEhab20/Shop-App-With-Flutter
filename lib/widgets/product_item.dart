@@ -44,7 +44,7 @@ class ProductItem extends StatelessWidget {
                 color: Theme.of(context).accentColor,
                 icon: Icon(Icons.shopping_cart),
                 onPressed: () {
-                  cartData.addItem(productItemData.id!, productItemData.price,
+                  cartData.addItem(productItemData.id, productItemData.price,
                       productItemData.title);
                   //we need to add a pop up message that we really add item
                   //establish connection with scaffold to the nearest widget that control the page
@@ -63,7 +63,7 @@ class ProductItem extends StatelessWidget {
                     action: SnackBarAction(
                       label: 'Undo',
                       onPressed: () {
-                        cartData.removeSingleItem(productItemData.id!);
+                        cartData.removeSingleItem(productItemData.id);
                       },
                     ),
                   ));

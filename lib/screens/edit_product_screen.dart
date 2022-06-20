@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/products_provider.dart';
 import '../providers/product.dart';
 
 class EditUserProductScreen extends StatefulWidget {
@@ -24,13 +26,23 @@ class Listener extends State<EditUserProductScreen> {
   var editedProduct = Product(
     // we will pass each value of textFields to the on saved() property with (){}
     //and start to assign values with it's keys then replace it with the original
-    id: null,
+    id: '',
     description: '',
     imageUrl: '',
     title: '',
     price: 0,
   );
+  // init Values For Adding a new Product
+  var initValues = {
+    'title': '',
+    'description': '',
+    'price': '',
+    'imageUrl': '',
+  };
+  //Var FOr Check Id true ---> id from other screen
+  var isInit = true;
   //Listener for imageFocusNode
+//---------------------------------------------------------
   @override
   void initState() {
     //Register a closure to be called when the object changes.
@@ -38,7 +50,35 @@ class Listener extends State<EditUserProductScreen> {
     _imageUrlFocusNode.addListener(_updateUrlImage);
     super.initState();
   }
+//---------------------------------------------------------
 
+//Get The ID Args
+  @override
+  void didChangeDependencies() {
+    if (isInit) {
+      ///Get the id before the run build like init state and use it here in this screen to
+      // access each item we want to update
+      final productId = ModalRoute.of(context)?.settings.arguments as String?;
+      if (productId != null) {
+        editedProduct = Provider.of<ProductsProvider>(context, listen: false)
+            .findByID(productId);
+        //then pass it to editedProducted
+
+        initValues = {
+          'title': editedProduct.title,
+          'description': editedProduct.description,
+          'price': editedProduct.price.toString(),
+          // 'imageUrl': _editedProduct.imageUrl,
+          'imageUrl': '',
+        };
+        _imageUrlController.text = editedProduct.imageUrl;
+      }
+    }
+    isInit = false;
+    super.didChangeDependencies();
+  }
+
+//---------------------------------------------------------
   @override
   void dispose() {
     _imageUrlFocusNode.removeListener(_updateUrlImage);
@@ -51,10 +91,18 @@ class Listener extends State<EditUserProductScreen> {
 
   //update url image Function
   void _updateUrlImage() {
+    //By adding it now and by calling setState() in there (even though it's empty),
+    // we force Flutter to update the screen,
+    // hence picking up the latest image value entered by the user.
+    // ++++++++++Check Validate
     if (!_imageUrlFocusNode.hasFocus) {
-      //By adding it now and by calling setState() in there (even though it's empty),
-      // we force Flutter to update the screen,
-      // hence picking up the latest image value entered by the user.
+      if ((!_imageUrlController.text.startsWith('http') &&
+              !_imageUrlController.text.startsWith('https')) ||
+          (!_imageUrlController.text.endsWith('.png') &&
+              !_imageUrlController.text.endsWith('.jpg') &&
+              !_imageUrlController.text.endsWith('.jpeg'))) {
+        return;
+      }
       setState(() {});
     }
   }
@@ -71,14 +119,24 @@ class Listener extends State<EditUserProductScreen> {
       return;
     }
     _formKey.currentState!.save();
-    print(' Title:' +
-        editedProduct.title +
-        '\n , description :' +
-        editedProduct.description +
-        ' \n,imageURL : ' +
-        editedProduct.imageUrl +
-        '\n , price :' +
-        editedProduct.price.toString());
+    if (editedProduct.id != '') {
+      Provider.of<ProductsProvider>(context, listen: false)
+          .updateProduct(editedProduct.id, editedProduct);
+    } else {
+      Provider.of<ProductsProvider>(context, listen: false)
+          .addProduct(editedProduct);
+    }
+    //only called the provider of products add product
+
+    Navigator.of(context).pop();
+    // print(' Title:' +
+    //     editedProduct.title +
+    //     '\n , description :' +
+    //     editedProduct.description +
+    //     ' \n,imageURL : ' +
+    //     editedProduct.imageUrl +
+    //     '\n , price :' +
+    //     editedProduct.price.toString());
   }
 
   //------------------------------------------------------------
@@ -107,7 +165,7 @@ class Listener extends State<EditUserProductScreen> {
                   // like TextField but it's auto connected to the form
                   // here not like textField on change but we use on submitted
                   TextFormField(
-                    autofocus: true,
+                    initialValue: initValues['title'],
                     decoration: InputDecoration(labelText: 'Title'),
                     //Enum That Help To make an action to go to the next field/input
                     textInputAction: TextInputAction.next,
@@ -118,12 +176,12 @@ class Listener extends State<EditUserProductScreen> {
                       //it's final properties so we reference to them and then assign a value to only the property we want
                       // and we can create a new class thats only submitting data and doesn't have final properties
                       editedProduct = Product(
-                        title: value.toString(),
-                        description: editedProduct.description,
-                        id: null,
-                        imageUrl: editedProduct.imageUrl,
-                        price: editedProduct.price,
-                      );
+                          title: value.toString(),
+                          description: editedProduct.description,
+                          imageUrl: editedProduct.imageUrl,
+                          price: editedProduct.price,
+                          id: editedProduct.id,
+                          isFavorite: editedProduct.isFavorite);
                     },
                     //takes a function that validate on this input data
                     // value --> here is what entered now to the input field
@@ -136,7 +194,7 @@ class Listener extends State<EditUserProductScreen> {
                     }),
                   ),
                   TextFormField(
-                    autofocus: true,
+                    initialValue: initValues['price'],
                     decoration: InputDecoration(labelText: 'Price'),
                     //Enum That Help To make an action to go to the next field/input
                     textInputAction: TextInputAction.next,
@@ -150,15 +208,29 @@ class Listener extends State<EditUserProductScreen> {
                       editedProduct = Product(
                         title: editedProduct.title,
                         description: editedProduct.description,
-                        id: null,
+                        id: editedProduct.id,
+                        isFavorite: editedProduct.isFavorite,
                         imageUrl: editedProduct.imageUrl,
                         price: double.parse(value.toString()),
                       );
                     },
+                    //Function Validator of Price .....
+                    validator: ((value) {
+                      if (value.toString().isEmpty) {
+                        return 'Please enter a price';
+                      }
+                      if (double.tryParse(value.toString()) == null) {
+                        return 'please Enter A valid Number';
+                      }
+                      if (double.parse(value.toString()) <= 0) {
+                        return 'please Enter A Number greater than zero';
+                      }
+                      return null;
+                    }),
                   ),
                   //Here For Description we need multiline lines to enter data
                   TextFormField(
-                    autofocus: true,
+                    initialValue: initValues['description'],
                     decoration: InputDecoration(labelText: 'Description'),
                     //Enum That Help To make an action to go to the next field/input
                     textInputAction: TextInputAction.next,
@@ -173,10 +245,19 @@ class Listener extends State<EditUserProductScreen> {
                       editedProduct = Product(
                         title: editedProduct.title,
                         description: value.toString(),
-                        id: null,
+                        id: '',
                         imageUrl: editedProduct.imageUrl,
                         price: editedProduct.price,
                       );
+                    },
+                    validator: (value) {
+                      if (value.toString().isEmpty) {
+                        return 'Please enter a description.';
+                      }
+                      if (value.toString().length < 10) {
+                        return 'Should be at least 10 characters long.';
+                      }
+                      return null;
                     },
                   ),
                   // Here we can handle it with with device camera and package image or other handle
@@ -222,10 +303,26 @@ class Listener extends State<EditUserProductScreen> {
                             editedProduct = Product(
                               title: editedProduct.title,
                               description: editedProduct.description,
-                              id: null,
+                              id: editedProduct.id,
+                              isFavorite: editedProduct.isFavorite,
                               imageUrl: value.toString(),
                               price: editedProduct.price,
                             );
+                          },
+                          validator: (value) {
+                            if (value.toString().isEmpty) {
+                              return 'Please enter an image URL.';
+                            }
+                            if (!value.toString().startsWith('http') &&
+                                !value.toString().startsWith('https')) {
+                              return 'Please enter a valid URL.';
+                            }
+                            if (!value.toString().endsWith('.png') &&
+                                !value.toString().endsWith('.jpg') &&
+                                !value.toString().endsWith('.jpeg')) {
+                              return 'Please enter a valid image URL.';
+                            }
+                            return null;
                           },
                         ),
                       ),
