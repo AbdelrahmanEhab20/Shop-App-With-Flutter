@@ -41,6 +41,7 @@ class Listener extends State<EditUserProductScreen> {
   };
   //Var FOr Check Id true ---> id from other screen
   var isInit = true;
+  var _isLoading = false;
   //Listener for imageFocusNode
 //---------------------------------------------------------
   @override
@@ -110,7 +111,10 @@ class Listener extends State<EditUserProductScreen> {
   //Submit Data Function
   //We will handle it by make a global key to control widget inside our code
   //we used it rarely
-  void _saveDataForm() {
+  //--------------
+// instead of then and catch will use async
+  //---------
+  Future<void> _saveDataForm() async {
     //validate each input --> if there is no error return
     final isValid = _formKey.currentState!.validate();
     //this will save the state of the form....
@@ -119,24 +123,48 @@ class Listener extends State<EditUserProductScreen> {
       return;
     }
     _formKey.currentState!.save();
+    setState(() {
+      _isLoading = true;
+    });
     if (editedProduct.id != '') {
-      Provider.of<ProductsProvider>(context, listen: false)
+      await Provider.of<ProductsProvider>(context, listen: false)
           .updateProduct(editedProduct.id, editedProduct);
     } else {
-      Provider.of<ProductsProvider>(context, listen: false)
-          .addProduct(editedProduct);
-    }
-    //only called the provider of products add product
+      try {
+        await Provider.of<ProductsProvider>(context, listen: false)
+            .addProduct(editedProduct);
+      } catch (error) {
+        // print(error);
+        // handling error and crating a new one
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('An Error Occurred'),
+            content: Text('Something Went Wrong'),
+            actions: [
+              TextButton(
+                child: Text('OK'),
+                onPressed: (() => Navigator.of(ctx).pop()),
+              )
+            ],
+          ),
+        );
+      }
 
+// No matter this fail or success at the top
+      //  finally {
+      //   setState(() {
+      //     //for the loader
+      //     _isLoading = false;
+      //   });
+      //   Navigator.of(context).pop();
+      // }
+    }
+    setState(() {
+      //for the loader
+      _isLoading = false;
+    });
     Navigator.of(context).pop();
-    // print(' Title:' +
-    //     editedProduct.title +
-    //     '\n , description :' +
-    //     editedProduct.description +
-    //     ' \n,imageURL : ' +
-    //     editedProduct.imageUrl +
-    //     '\n , price :' +
-    //     editedProduct.price.toString());
   }
 
   //------------------------------------------------------------
@@ -154,149 +182,56 @@ class Listener extends State<EditUserProductScreen> {
         ],
       ),
       //we will use form widget that help to collect user inputs and can handle VAlidations
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-            //Assign the key ---> now , it can be used to interact with the state managed by this widget
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // like TextField but it's auto connected to the form
-                  // here not like textField on change but we use on submitted
-                  TextFormField(
-                    initialValue: initValues['title'],
-                    decoration: InputDecoration(labelText: 'Title'),
-                    //Enum That Help To make an action to go to the next field/input
-                    textInputAction: TextInputAction.next,
-                    //Here this function fired once we click next button and focus on price
-                    onFieldSubmitted: ((value) =>
-                        FocusScope.of(context).requestFocus(_priceFocusNode)),
-                    onSaved: (value) {
-                      //it's final properties so we reference to them and then assign a value to only the property we want
-                      // and we can create a new class thats only submitting data and doesn't have final properties
-                      editedProduct = Product(
-                          title: value.toString(),
-                          description: editedProduct.description,
-                          imageUrl: editedProduct.imageUrl,
-                          price: editedProduct.price,
-                          id: editedProduct.id,
-                          isFavorite: editedProduct.isFavorite);
-                    },
-                    //takes a function that validate on this input data
-                    // value --> here is what entered now to the input field
-                    //and handle it's style in decoration box
-                    validator: ((value) {
-                      if (value!.isEmpty) {
-                        return 'Please provide a valid data here';
-                      }
-                      return null;
-                    }),
-                  ),
-                  TextFormField(
-                    initialValue: initValues['price'],
-                    decoration: InputDecoration(labelText: 'Price'),
-                    //Enum That Help To make an action to go to the next field/input
-                    textInputAction: TextInputAction.next,
-                    keyboardType: TextInputType.number,
-                    focusNode: _priceFocusNode,
-                    onFieldSubmitted: ((value) => FocusScope.of(context)
-                        .requestFocus(_descriptionFocusNode)),
-                    onSaved: (value) {
-                      //it's final properties so we reference to them and then assign a value to only the property we want
-                      // and we can create a new class thats only submitting data and doesn't have final properties
-                      editedProduct = Product(
-                        title: editedProduct.title,
-                        description: editedProduct.description,
-                        id: editedProduct.id,
-                        isFavorite: editedProduct.isFavorite,
-                        imageUrl: editedProduct.imageUrl,
-                        price: double.parse(value.toString()),
-                      );
-                    },
-                    //Function Validator of Price .....
-                    validator: ((value) {
-                      if (value.toString().isEmpty) {
-                        return 'Please enter a price';
-                      }
-                      if (double.tryParse(value.toString()) == null) {
-                        return 'please Enter A valid Number';
-                      }
-                      if (double.parse(value.toString()) <= 0) {
-                        return 'please Enter A Number greater than zero';
-                      }
-                      return null;
-                    }),
-                  ),
-                  //Here For Description we need multiline lines to enter data
-                  TextFormField(
-                    initialValue: initValues['description'],
-                    decoration: InputDecoration(labelText: 'Description'),
-                    //Enum That Help To make an action to go to the next field/input
-                    textInputAction: TextInputAction.next,
-                    //here given max line
-                    maxLines: 3,
-                    //multiline available keyboard
-                    keyboardType: TextInputType.multiline,
-                    focusNode: _descriptionFocusNode,
-                    onSaved: (value) {
-                      //it's final properties so we reference to them and then assign a value to only the property we want
-                      // and we can create a new class thats only submitting data and doesn't have final properties
-                      editedProduct = Product(
-                        title: editedProduct.title,
-                        description: value.toString(),
-                        id: '',
-                        imageUrl: editedProduct.imageUrl,
-                        price: editedProduct.price,
-                      );
-                    },
-                    validator: (value) {
-                      if (value.toString().isEmpty) {
-                        return 'Please enter a description.';
-                      }
-                      if (value.toString().length < 10) {
-                        return 'Should be at least 10 characters long.';
-                      }
-                      return null;
-                    },
-                  ),
-                  // Here we can handle it with with device camera and package image or other handle
-                  //but it will be text with type url and with image preview to show what user input
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        margin: EdgeInsets.only(top: 10, right: 10),
-                        //BoxDecorator Will Make OverFLow ---> because it can't be with unbounded width
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.grey)),
-                        child: _imageUrlController.text.isEmpty
-                            ? Text('Enter A Url')
-                            : FittedBox(
-                                child: Image.network(
-                                  _imageUrlController.text,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                      ),
-                      //----- TextFormFiled Takes it's width , height as it can get so that's make the problem also
-                      //---Expanded is the solution-------------------
-                      //----------------------------------
-                      //here we need manually to handle text Controller
-                      //and get what entered to show it in the container Preview
-                      Expanded(
-                        child: TextFormField(
-                          decoration: InputDecoration(labelText: 'Image Url'),
-                          // last input so to be sure it's done inputs data
-                          textInputAction: TextInputAction.done,
-                          keyboardType: TextInputType.url,
-                          controller: _imageUrlController,
-                          focusNode: _imageUrlFocusNode,
-                          onFieldSubmitted: (_) {
-                            _saveDataForm;
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                  //Assign the key ---> now , it can be used to interact with the state managed by this widget
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        // like TextField but it's auto connected to the form
+                        // here not like textField on change but we use on submitted
+                        TextFormField(
+                          initialValue: initValues['title'],
+                          decoration: InputDecoration(labelText: 'Title'),
+                          //Enum That Help To make an action to go to the next field/input
+                          textInputAction: TextInputAction.next,
+                          //Here this function fired once we click next button and focus on price
+                          onFieldSubmitted: ((value) => FocusScope.of(context)
+                              .requestFocus(_priceFocusNode)),
+                          onSaved: (value) {
+                            //it's final properties so we reference to them and then assign a value to only the property we want
+                            // and we can create a new class thats only submitting data and doesn't have final properties
+                            editedProduct = Product(
+                                title: value.toString(),
+                                description: editedProduct.description,
+                                imageUrl: editedProduct.imageUrl,
+                                price: editedProduct.price,
+                                id: editedProduct.id,
+                                isFavorite: editedProduct.isFavorite);
                           },
+                          //takes a function that validate on this input data
+                          // value --> here is what entered now to the input field
+                          //and handle it's style in decoration box
+                          validator: ((value) {
+                            if (value!.isEmpty) {
+                              return 'Please provide a valid data here';
+                            }
+                            return null;
+                          }),
+                        ),
+                        TextFormField(
+                          initialValue: initValues['price'],
+                          decoration: InputDecoration(labelText: 'Price'),
+                          //Enum That Help To make an action to go to the next field/input
+                          textInputAction: TextInputAction.next,
+                          keyboardType: TextInputType.number,
+                          focusNode: _priceFocusNode,
+                          onFieldSubmitted: ((value) => FocusScope.of(context)
+                              .requestFocus(_descriptionFocusNode)),
                           onSaved: (value) {
                             //it's final properties so we reference to them and then assign a value to only the property we want
                             // and we can create a new class thats only submitting data and doesn't have final properties
@@ -305,33 +240,152 @@ class Listener extends State<EditUserProductScreen> {
                               description: editedProduct.description,
                               id: editedProduct.id,
                               isFavorite: editedProduct.isFavorite,
-                              imageUrl: value.toString(),
+                              imageUrl: editedProduct.imageUrl,
+                              price: double.parse(value.toString()),
+                            );
+                          },
+                          //Function Validator of Price .....
+                          validator: ((value) {
+                            if (value.toString().isEmpty) {
+                              return 'Please enter a price';
+                            }
+                            if (double.tryParse(value.toString()) == null) {
+                              return 'please Enter A valid Number';
+                            }
+                            if (double.parse(value.toString()) <= 0) {
+                              return 'please Enter A Number greater than zero';
+                            }
+                            return null;
+                          }),
+                        ),
+                        //Here For Description we need multiline lines to enter data
+                        TextFormField(
+                          initialValue: initValues['description'],
+                          decoration: InputDecoration(labelText: 'Description'),
+                          //Enum That Help To make an action to go to the next field/input
+                          textInputAction: TextInputAction.next,
+                          //here given max line
+                          maxLines: 3,
+                          //multiline available keyboard
+                          keyboardType: TextInputType.multiline,
+                          focusNode: _descriptionFocusNode,
+                          onSaved: (value) {
+                            //it's final properties so we reference to them and then assign a value to only the property we want
+                            // and we can create a new class thats only submitting data and doesn't have final properties
+                            editedProduct = Product(
+                              title: editedProduct.title,
+                              description: value.toString(),
+                              id: '',
+                              imageUrl: editedProduct.imageUrl,
                               price: editedProduct.price,
                             );
                           },
                           validator: (value) {
                             if (value.toString().isEmpty) {
-                              return 'Please enter an image URL.';
+                              return 'Please enter a description.';
                             }
-                            if (!value.toString().startsWith('http') &&
-                                !value.toString().startsWith('https')) {
-                              return 'Please enter a valid URL.';
-                            }
-                            if (!value.toString().endsWith('.png') &&
-                                !value.toString().endsWith('.jpg') &&
-                                !value.toString().endsWith('.jpeg')) {
-                              return 'Please enter a valid image URL.';
+                            if (value.toString().length < 10) {
+                              return 'Should be at least 10 characters long.';
                             }
                             return null;
                           },
                         ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            )),
-      ),
+                        //--------------------------------------------------------------------------------------
+                        //Here For Email Address to test with regex .....
+                        TextFormField(
+                          decoration:
+                              InputDecoration(labelText: 'Email Address'),
+                          textInputAction: TextInputAction.done,
+                          //emailAddress available keyboard
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value.toString().isEmpty) {
+                              return 'Please enter your email.';
+                            }
+                            if (!RegExp(
+                                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                .hasMatch(value.toString())) {
+                              return 'Not Valid Email , Enter Valid Email Please';
+                            }
+                            return null;
+                          },
+                        ),
+                        //--------------------------------------------------------------------------------------
+                        //--------------------------------------------------------------------------------------
+                        // Here we can handle it with with device camera and package image or other handle
+                        //but it will be text with type url and with image preview to show what user input
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              width: 100,
+                              height: 100,
+                              margin: EdgeInsets.only(top: 10, right: 10),
+                              //BoxDecorator Will Make OverFLow ---> because it can't be with unbounded width
+                              decoration: BoxDecoration(
+                                  border:
+                                      Border.all(width: 1, color: Colors.grey)),
+                              child: _imageUrlController.text.isEmpty
+                                  ? Text('Enter A Url')
+                                  : FittedBox(
+                                      child: Image.network(
+                                        _imageUrlController.text,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                            ),
+                            //----- TextFormFiled Takes it's width , height as it can get so that's make the problem also
+                            //---Expanded is the solution-------------------
+                            //----------------------------------
+                            //here we need manually to handle text Controller
+                            //and get what entered to show it in the container Preview
+                            Expanded(
+                              child: TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Image Url'),
+                                // last input so to be sure it's done inputs data
+                                textInputAction: TextInputAction.done,
+                                keyboardType: TextInputType.url,
+                                controller: _imageUrlController,
+                                focusNode: _imageUrlFocusNode,
+                                onFieldSubmitted: (_) {
+                                  _saveDataForm();
+                                },
+                                onSaved: (value) {
+                                  //it's final properties so we reference to them and then assign a value to only the property we want
+                                  // and we can create a new class thats only submitting data and doesn't have final properties
+                                  editedProduct = Product(
+                                    title: editedProduct.title,
+                                    description: editedProduct.description,
+                                    id: editedProduct.id,
+                                    isFavorite: editedProduct.isFavorite,
+                                    imageUrl: value.toString(),
+                                    price: editedProduct.price,
+                                  );
+                                },
+                                validator: (value) {
+                                  if (value.toString().isEmpty) {
+                                    return 'Please enter an image URL.';
+                                  }
+                                  if (!value.toString().startsWith('http') &&
+                                      !value.toString().startsWith('https')) {
+                                    return 'Please enter a valid URL.';
+                                  }
+                                  if (!value.toString().endsWith('.png') &&
+                                      !value.toString().endsWith('.jpg') &&
+                                      !value.toString().endsWith('.jpeg')) {
+                                    return 'Please enter a valid image URL.';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  )),
+            ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/products_provider.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/badge.dart';
 import '../widgets/product_grid_widget.dart';
@@ -19,6 +20,44 @@ class ProductOverviewScreen extends StatefulWidget {
 }
 
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
+  ///---------------------------------------------------------------------------------
+  //============================================================================
+  // fetching data from api *********
+  //================================================================
+  @override
+  void initState() {
+    // Best place to fetch data before the screen start to be built
+    // http.get();
+    // Provider.of<ProductsProvider>(context)
+    //     .fetchAndSetProducts();  -------? >>>>> // will not work because it can't access the context run before build
+    // first solution ---> wrap it with duration delayed future --> .then (fetch data) ----- not the best
+    // second solution---->  didChangeDependencies --> run after the widget built it's context
+    super.initState();
+  }
+
+  //loading var for loader
+  var _isLoading = false;
+  var _isInit = true;
+  // Best Solution to fetch data for now and handle it with true - false var to stop it's run many times
+  @override
+  void didChangeDependencies() async {
+    if (_isInit) {
+      /// till the data fetched
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<ProductsProvider>(context)
+          .fetchAndSetProducts()
+          .then((value) =>
+              // here after loading end set again to false
+              setState(() {
+                _isLoading = false;
+              }));
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
+
   // final List<Product> loadedProducts ;
   // Var for handle Favorites
   var _showOnlyFavorites = false;
@@ -76,7 +115,11 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
       ),
       drawer: SideAppDrawer(),
       //Will Forward this var to products
-      body: ProductWidget(_showOnlyFavorites),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductWidget(_showOnlyFavorites),
     );
   }
 }

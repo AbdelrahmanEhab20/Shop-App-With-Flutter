@@ -10,6 +10,12 @@ import '../screens/edit_product_screen.dart';
 
 class UserProductsScreen extends StatelessWidget {
   static const routeName = '/user-products';
+  // function for refreshinng data of products by api
+  Future<void> _refreshAndFetchData(BuildContext context) async {
+    await Provider.of<ProductsProvider>(context, listen: false)
+        .fetchAndSetProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductsProvider>(context);
@@ -23,22 +29,25 @@ class UserProductsScreen extends StatelessWidget {
         )
       ]),
       drawer: SideAppDrawer(),
-      body: Padding(
-        padding: EdgeInsets.all(8),
-        child: ListView.builder(
-          itemCount: productsData.loadedItems.length,
-          itemBuilder: (ctx, index) {
-            return Column(
-              children: [
-                UserProductItem(
-                    productsData.loadedItems[index].title,
-                    productsData.loadedItems[index].imageUrl,
-                    productsData.loadedItems[index].description,
-                    productsData.loadedItems[index].id),
-                Divider(),
-              ],
-            );
-          },
+      body: RefreshIndicator(
+        onRefresh: () => _refreshAndFetchData(context),
+        child: Padding(
+          padding: EdgeInsets.all(8),
+          child: ListView.builder(
+            itemCount: productsData.loadedItems.length,
+            itemBuilder: (ctx, index) {
+              return Column(
+                children: [
+                  UserProductItem(
+                      productsData.loadedItems[index].title,
+                      productsData.loadedItems[index].imageUrl,
+                      productsData.loadedItems[index].description,
+                      productsData.loadedItems[index].id),
+                  Divider(),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
