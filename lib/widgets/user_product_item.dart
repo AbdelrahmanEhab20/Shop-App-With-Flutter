@@ -11,6 +11,7 @@ class UserProductItem extends StatelessWidget {
   UserProductItem(this.title, this.imageUrl, this.description, this.id);
   @override
   Widget build(BuildContext context) {
+    final MyScaffoldHandle = ScaffoldMessenger.of(context);
     return SingleChildScrollView(
       child: ListTile(
         title: Text(title),
@@ -30,9 +31,15 @@ class UserProductItem extends StatelessWidget {
               color: Theme.of(context).primaryColor,
             ),
             IconButton(
-              onPressed: (() {
-                Provider.of<ProductsProvider>(context, listen: false)
-                    .deleteProduct(id);
+              onPressed: (() async {
+                try {
+                  await Provider.of<ProductsProvider>(context, listen: false)
+                      .deleteProduct(id);
+                } catch (error) {
+                  MyScaffoldHandle.showSnackBar(SnackBar(
+                    content: Text('Deleting Failed!!!'),
+                  ));
+                }
               }),
               icon: Icon(Icons.delete_forever_sharp),
               color: Color.fromARGB(255, 244, 21, 5),

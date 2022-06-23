@@ -37,25 +37,7 @@ class CartScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
-                  TextButton(
-                    child: Text(
-                      'ORDER NOW',
-                      softWrap: true,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor),
-                    ),
-                    onPressed: () {
-                      // Fire The Add Function in the order provider.
-                      //not interseted in changes listen:false
-                      Provider.of<OrdersProvider>(context, listen: false)
-                          .addNewOrder(cart.cartItemsCopy.values.toList(),
-                              cart.totalAmount);
-                      //after add the order clear the list
-                      cart.clearListOfCart();
-                    },
-                  )
+                  OrderButton(cart: cart)
                 ],
               ),
             ),
@@ -79,6 +61,54 @@ class CartScreen extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key? key,
+    required this.cart,
+  }) : super(key: key);
+
+  final CartProvider cart;
+
+  @override
+  State<OrderButton> createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      child: _isLoading
+          ? CircularProgressIndicator()
+          : Text(
+              'ORDER NOW',
+              softWrap: true,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor),
+            ),
+      onPressed: (widget.cart.totalAmount <= 0 || _isLoading)
+          ? null
+          : () async {
+              setState(() {
+                _isLoading = true;
+              });
+              // Fire The Add Function in the order provider.
+              //not interseted in changes listen:false
+              await Provider.of<OrdersProvider>(context, listen: false)
+                  .addNewOrder(widget.cart.cartItemsCopy.values.toList(),
+                      widget.cart.totalAmount);
+              setState(() {
+                _isLoading = false;
+              });
+              //after add the order clear the list
+              widget.cart.clearListOfCart();
+            },
     );
   }
 }

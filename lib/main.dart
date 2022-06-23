@@ -28,7 +28,6 @@ class MyApp extends StatelessWidget {
     /******************************************************************************* */
     return MultiProvider(
       providers: [
-        
         // Provider---> ProductClass Provider
         ChangeNotifierProvider(
             // crate inside it's builder method with context help

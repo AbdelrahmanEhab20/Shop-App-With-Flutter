@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'product.dart';
+import '../models/http_exceptions.dart';
 
 //A class that can be extended or mixed in that provides
 //a change notification API using [VoidCallback] for notifications.
@@ -112,6 +111,9 @@ class ProductsProvider with ChangeNotifier {
       final productsRespons = await http.get(urlCallServer);
       final ExtractedData =
           json.decode(productsRespons.body) as Map<String, dynamic>;
+      if (ExtractedData.isEmpty) {
+        return;
+      }
       final List<Product> loadedProducts = [];
       ExtractedData.forEach((prodID, prodData) {
         loadedProducts.add(Product(
