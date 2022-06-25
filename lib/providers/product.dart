@@ -21,7 +21,7 @@ class Product with ChangeNotifier {
   });
 
 //Handle Favorite also with http
-  Future<void> toggleFavoriteStatus() async {
+  Future<void> toggleFavoriteStatus(String authToken, String userID) async {
     final oldStatus = isFavorite;
     // Inverted the value to be the opposite of it's current value
     isFavorite = !isFavorite;
@@ -30,12 +30,13 @@ class Product with ChangeNotifier {
     //(1)make a connection to the server --> FireBase .....
     final urlCallServer = Uri.https(
         'flutterproject-6bd3e-default-rtdb.firebaseio.com',
-        '/products/${id}.json');
+        '/userFavorites/$userID/${id}.json',
+        {'auth': '$authToken'});
     //http patch ---> only value of Favs
     try {
-      final responseforError = await http.patch(urlCallServer,
-          body: json.encode({'isFavorite': isFavorite}));
-      if (responseforError.statusCode >= 400) {
+      final responseForError =
+          await http.put(urlCallServer, body: json.encode(isFavorite));
+      if (responseForError.statusCode >= 400) {
         isFavorite = oldStatus;
         notifyListeners();
       }

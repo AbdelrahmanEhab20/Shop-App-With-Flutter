@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../providers/auth.dart';
 import '../providers/cart_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/product.dart';
@@ -26,6 +27,9 @@ class ProductItem extends StatelessWidget {
 
     final cartData = Provider.of<CartProvider>(context, listen: false);
     //print("Testing Consumer Ane Provider");
+    //GET THE Token And PAss IT
+    final authToken = Provider.of<AuthProvider>(context, listen: false).token;
+    final userID = Provider.of<AuthProvider>(context, listen: false).userID;
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GestureDetector(
@@ -76,7 +80,7 @@ class ProductItem extends StatelessWidget {
                     ? Icons.favorite_sharp
                     : Icons.favorite_border),
                 onPressed: () {
-                  productItemData.toggleFavoriteStatus();
+                  productItemData.toggleFavoriteStatus(authToken!, userID!);
                 },
               ),
               backgroundColor: Colors.black87,

@@ -75,7 +75,10 @@ class ProductsProvider with ChangeNotifier {
     //         'https://m.media-amazon.com/images/I/91gNRIwB-jL._AC_SY445_.jpg',
     //   ),
   ];
-
+  //CONSTRUCTOR TO GET THE TOKEN FROM IT WITH HELP OF PROVIDER
+  final String? _authToken;
+  final String? _userID;
+  ProductsProvider(this._authToken, this._userID, this._items);
   //This VAr and The check down Will Be for
   // return a list with  only favorites
   /**************************************************************** */
@@ -104,7 +107,9 @@ class ProductsProvider with ChangeNotifier {
   /// Fetching data for our products With API -------
   Future<void> fetchAndSetProducts() async {
     final urlCallServer = Uri.https(
-        'flutterproject-6bd3e-default-rtdb.firebaseio.com', '/products.json');
+        'flutterproject-6bd3e-default-rtdb.firebaseio.com',
+        '/products.json',
+        {'auth': '$_authToken'});
     //calling Get Method
     // Store The data back From the API
     try {
@@ -114,6 +119,14 @@ class ProductsProvider with ChangeNotifier {
       if (ExtractedData.isEmpty) {
         return;
       }
+      //get all FAvorites for this specific user
+      final urlCallFav = Uri.https(
+          'flutterproject-6bd3e-default-rtdb.firebaseio.com',
+          '/userFavorites/$_userID.json',
+          {'auth': '$_authToken'});
+      final FavResponse = await http.get(urlCallFav);
+      //get the data of favs
+      final FavoritesExtractedData = json.decode(FavResponse.body);
       final List<Product> loadedProducts = [];
       ExtractedData.forEach((prodID, prodData) {
         loadedProducts.add(Product(
@@ -121,7 +134,9 @@ class ProductsProvider with ChangeNotifier {
           title: prodData['title'],
           description: prodData['description'],
           price: prodData['price'],
-          isFavorite: prodData['isFavorite'],
+          isFavorite: FavoritesExtractedData == null
+              ? false
+              : FavoritesExtractedData[prodID] ?? false,
           imageUrl: prodData['imageUrl'],
         ));
       });
@@ -141,7 +156,9 @@ class ProductsProvider with ChangeNotifier {
     // new version of writing the link of server in flutter
     //(1)make a connection to the server --> FireBase .....
     final urlCallServer = Uri.https(
-        'flutterproject-6bd3e-default-rtdb.firebaseio.com', '/products.json');
+        'flutterproject-6bd3e-default-rtdb.firebaseio.com',
+        '/products.json',
+        {'auth': '$_authToken'});
     //-------------------------------------------------
     try {
       //(2) send request ---> post
@@ -151,7 +168,6 @@ class ProductsProvider with ChangeNotifier {
             'description': product.description,
             'price': product.price,
             'imageUrl': product.imageUrl,
-            'isFavorite': product.isFavorite,
           }));
 
       print(json.decode(response.body));
@@ -181,7 +197,8 @@ class ProductsProvider with ChangeNotifier {
       //Id ---> id.json .........
       final urlCallServer = Uri.https(
           'flutterproject-6bd3e-default-rtdb.firebaseio.com',
-          '/products/${id}.json');
+          '/products/${id}.json',
+          {'auth': '$_authToken'});
       await http.patch(urlCallServer,
           body: json.encode({
             'title': newProduct.title,
@@ -202,7 +219,8 @@ class ProductsProvider with ChangeNotifier {
     //(1)make a connection to the server --> FireBase .....
     final urlCallServer = Uri.https(
         'flutterproject-6bd3e-default-rtdb.firebaseio.com',
-        '/products/${id}.json');
+        '/products/${id}.json',
+        {'auth': '$_authToken'});
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     Product? existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
