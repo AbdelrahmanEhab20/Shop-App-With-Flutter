@@ -66,13 +66,13 @@ class Listener extends State<EditUserProductScreen> {
         //then pass it to editedProducted
 
         initValues = {
-          'title': editedProduct.title,
-          'description': editedProduct.description,
+          'title': editedProduct.title!,
+          'description': editedProduct.description!,
           'price': editedProduct.price.toString(),
           // 'imageUrl': _editedProduct.imageUrl,
           'imageUrl': '',
         };
-        _imageUrlController.text = editedProduct.imageUrl;
+        _imageUrlController.text = editedProduct.imageUrl!;
       }
     }
     isInit = false;
@@ -128,7 +128,7 @@ class Listener extends State<EditUserProductScreen> {
     });
     if (editedProduct.id != '') {
       await Provider.of<ProductsProvider>(context, listen: false)
-          .updateProduct(editedProduct.id, editedProduct);
+          .updateProduct(editedProduct.id!, editedProduct);
     } else {
       try {
         await Provider.of<ProductsProvider>(context, listen: false)

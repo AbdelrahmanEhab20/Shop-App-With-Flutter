@@ -13,12 +13,13 @@ class UserProductsScreen extends StatelessWidget {
   // function for refreshinng data of products by api
   Future<void> _refreshAndFetchData(BuildContext context) async {
     await Provider.of<ProductsProvider>(context, listen: false)
-        .fetchAndSetProducts();
+        .fetchAndSetProducts(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final productsData = Provider.of<ProductsProvider>(context);
+    // final productsData = Provider.of<ProductsProvider>(context);
+    print('REBUILDING...................');
     return Scaffold(
       appBar: AppBar(centerTitle: true, title: Text('Your Products'), actions: [
         IconButton(
@@ -29,26 +30,38 @@ class UserProductsScreen extends StatelessWidget {
         )
       ]),
       drawer: SideAppDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () => _refreshAndFetchData(context),
-        child: Padding(
-          padding: EdgeInsets.all(8),
-          child: ListView.builder(
-            itemCount: productsData.loadedItems.length,
-            itemBuilder: (ctx, index) {
-              return Column(
-                children: [
-                  UserProductItem(
-                      productsData.loadedItems[index].title,
-                      productsData.loadedItems[index].imageUrl,
-                      productsData.loadedItems[index].description,
-                      productsData.loadedItems[index].id),
-                  Divider(),
-                ],
-              );
-            },
-          ),
-        ),
+      //we will create a future builder that will help us
+      //build or load according to what return from the future method
+      body: FutureBuilder(
+        future: _refreshAndFetchData(context),
+        builder: (ctx, snapShot) => snapShot.connectionState ==
+                ConnectionState.waiting
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : RefreshIndicator(
+                onRefresh: () => _refreshAndFetchData(context),
+                child: Consumer<ProductsProvider>(
+                  builder: (ctx, productsData, _) => Padding(
+                    padding: EdgeInsets.all(8),
+                    child: ListView.builder(
+                      itemCount: productsData.loadedItems.length,
+                      itemBuilder: (ctx, index) {
+                        return Column(
+                          children: [
+                            UserProductItem(
+                                productsData.loadedItems[index].title!,
+                                productsData.loadedItems[index].imageUrl!,
+                                productsData.loadedItems[index].description!,
+                                productsData.loadedItems[index].id!),
+                            Divider(),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
   }

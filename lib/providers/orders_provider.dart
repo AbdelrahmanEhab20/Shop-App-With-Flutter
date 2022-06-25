@@ -26,12 +26,13 @@ class OrdersProvider with ChangeNotifier {
   }
 
   final String? _authToken;
-  OrdersProvider(this._authToken, this._orders);
+  final String? _userID;
+  OrdersProvider(this._authToken, this._userID, this._orders);
   //add new Order
   Future<void> addNewOrder(List<CartItem> cardProducts, double total) async {
     final urlCallServer = Uri.https(
         'flutterproject-6bd3e-default-rtdb.firebaseio.com',
-        '/orders.json',
+        '/orders/$_userID.json',
         {'auth': '$_authToken'});
     final timestamp = DateTime.now();
     final response = await http.post(urlCallServer,
@@ -62,13 +63,13 @@ class OrdersProvider with ChangeNotifier {
   Future<void> fetchAndSetOrders() async {
     final urlCallServer = Uri.https(
         'flutterproject-6bd3e-default-rtdb.firebaseio.com',
-        '/orders.json',
+        '/orders/$_userID.json',
         {'auth': '$_authToken'});
     final response = await http.get(urlCallServer);
     final List<OrderItem> loadedOrders = [];
     final extractedData = json.decode(response.body) as Map<String, dynamic>;
     ;
-    if (extractedData == null) {
+    if (extractedData.isEmpty) {
       return;
     }
     extractedData.forEach((orderId, orderData) {

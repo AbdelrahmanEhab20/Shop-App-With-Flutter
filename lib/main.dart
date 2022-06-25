@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:page_transition/page_transition.dart';
 
 import '../screens/cart_screen.dart';
 import '../providers/cart_provider.dart';
@@ -12,6 +13,7 @@ import '../screens/user_products_screen.dart';
 import '../screens/edit_product_screen.dart';
 import '../screens/auth_screen.dart';
 import '../providers/auth.dart';
+import '../screens/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,21 +49,43 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => CartProvider()),
         // Provider---> CartClass Provider
         ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
-          create: (ctx) => OrdersProvider(null, []),
+          create: (ctx) => OrdersProvider(null, null, []),
           update: (ctx, authData, previousOrders) => OrdersProvider(
               authData.token,
+              authData.userID,
               previousOrders == null ? [] : previousOrders.ordersCopy),
         )
       ],
       child: Consumer<AuthProvider>(
         builder: (ctx, authData, _) => MaterialApp(
+            onGenerateRoute: (settings) {
+              switch (settings.name) {
+                case '/':
+                  return PageTransition(
+                    child: ProductOverviewScreen(),
+                    type: PageTransitionType.scale,
+                    settings: settings,
+                  );
+                default:
+                  return null;
+              }
+            },
             debugShowCheckedModeBanner: false,
             title: 'MyShop',
             theme: ThemeData(
                 primarySwatch: Colors.teal,
                 accentColor: Colors.deepOrange,
                 fontFamily: 'Lato'),
-            home: authData.isAuth ? ProductOverviewScreen() : AuthScreen(),
+            home: authData.isAuth
+                ? ProductOverviewScreen()
+                : FutureBuilder(
+                    future: authData.tryAutoLogin(),
+                    builder: (ctx, authResultSnapshot) =>
+                        authResultSnapshot.connectionState ==
+                                ConnectionState.waiting
+                            ? SplashScreen()
+                            : AuthScreen(),
+                  ),
             routes: {
               ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
               CartScreen.routeName: (ctx) => CartScreen(),

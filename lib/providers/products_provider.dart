@@ -105,11 +105,24 @@ class ProductsProvider with ChangeNotifier {
   }
 
   /// Fetching data for our products With API -------
-  Future<void> fetchAndSetProducts() async {
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    // final filterString =
+    //     filterByUser ? 'orderBy="creatorId"&equalTo="$_userID"' : '';
+    //TOGGLE BETWEEN THE FILTER OPTIONS TO GET THE DATA ACCORDING TO WHAT
+    //IS THE VALUE True / False
+    Map<String, dynamic> queryParameters = filterByUser
+        ? {
+            'auth': '$_authToken',
+            'orderBy': '"creatorID"',
+            'equalTo': '"${_userID}"'
+          }
+        : {
+            'auth': '$_authToken',
+          };
     final urlCallServer = Uri.https(
         'flutterproject-6bd3e-default-rtdb.firebaseio.com',
         '/products.json',
-        {'auth': '$_authToken'});
+        queryParameters);
     //calling Get Method
     // Store The data back From the API
     try {
@@ -168,6 +181,7 @@ class ProductsProvider with ChangeNotifier {
             'description': product.description,
             'price': product.price,
             'imageUrl': product.imageUrl,
+            'creatorID': _userID
           }));
 
       print(json.decode(response.body));

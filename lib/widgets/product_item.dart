@@ -39,17 +39,21 @@ class ProductItem extends StatelessWidget {
               arguments: productItemData.id);
         },
         child: GridTile(
-          child: Image.network(
-            productItemData.imageUrl,
-            fit: BoxFit.fitHeight,
+          child: Hero(
+            tag: productItemData.id!,
+            child: FadeInImage(
+              placeholder: AssetImage('assets/Images/product-placeholder.png'),
+              image: NetworkImage(productItemData.imageUrl!),
+              fit: BoxFit.cover,
+            ),
           ),
           footer: GridTileBar(
               trailing: IconButton(
                 color: Theme.of(context).accentColor,
                 icon: Icon(Icons.shopping_cart),
                 onPressed: () {
-                  cartData.addItem(productItemData.id, productItemData.price,
-                      productItemData.title);
+                  cartData.addItem(productItemData.id!, productItemData.price!,
+                      productItemData.title!);
                   //we need to add a pop up message that we really add item
                   //establish connection with scaffold to the nearest widget that control the page
                   // we can use many methods with open drawer and also ....
@@ -67,7 +71,7 @@ class ProductItem extends StatelessWidget {
                     action: SnackBarAction(
                       label: 'Undo',
                       onPressed: () {
-                        cartData.removeSingleItem(productItemData.id);
+                        cartData.removeSingleItem(productItemData.id!);
                       },
                     ),
                   ));
@@ -85,7 +89,7 @@ class ProductItem extends StatelessWidget {
               ),
               backgroundColor: Colors.black87,
               title: Text(
-                productItemData.title,
+                productItemData.title!,
                 textAlign: TextAlign.center,
               )),
         ),
